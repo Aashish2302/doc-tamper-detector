@@ -1,0 +1,18 @@
+# --- core (model) ---
+torch==2.5.1
+torchvision==0.20.1
+numpy<2.0
+opencv-python-headless==4.10.0.84
+pyyaml==6.0.2
+pillow==10.4.0
+einops==0.8.0
+safetensors>=0.4.3
+# --- content-mask detectors ---
+easyocr==1.7.2
+ultralytics==8.3.0
+transformers==4.44.2
+huggingface_hub>=0.24,<1.0
+# --- serving ---
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9

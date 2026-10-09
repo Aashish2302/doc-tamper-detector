@@ -1,0 +1,8 @@
+# Deployed configuration: A3 = RGB + all-five content-mask branch (DOC57 recommended).
+model: dual_branch
+semantic_channels: all   # text, logo, signature, stamp, watermark
+fusion_mode: residual
+use_noise: true
+backbone: dinov3_vitb16
+lora: {rank: 8, alpha: 16, blocks: 6}
+inference: {tile: 512, overlap: 384, threshold: 0.5}   # overlap 128 for ~5x faster, slightly lower IoU
