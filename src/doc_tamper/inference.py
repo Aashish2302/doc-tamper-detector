@@ -15,8 +15,8 @@ sys.path.insert(0, str(_HERE / "vendor" / "dualbranch"))
 from dual_branch_model import build_dual_branch, _tile_starts   # noqa: E402
 from .content_mask import ContentMaskExtractor, CHANNELS          # noqa: E402
 
-DEFAULT_WEIGHTS = os.environ.get("DT_WEIGHTS", str(_HERE.parents[2] / "weights" / "model.pt"))
-DEFAULT_DINOV3 = os.environ.get("DT_DINOV3", str(_HERE.parents[2] / "weights" / "dinov3_vitb16.pth"))
+DEFAULT_WEIGHTS = os.environ.get("DT_WEIGHTS", str(_HERE.parents[1] / "weights" / "model.pt"))
+DEFAULT_DINOV3 = os.environ.get("DT_DINOV3", str(_HERE.parents[1] / "weights" / "dinov3_vitb16.pth"))
 DINOV3_REPO = str(_HERE / "vendor" / "dinov3_repo")
 
 

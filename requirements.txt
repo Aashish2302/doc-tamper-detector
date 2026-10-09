@@ -9,7 +9,7 @@ einops==0.8.0
 safetensors>=0.4.3
 # --- content-mask detectors ---
 easyocr==1.7.2
-ultralytics==8.3.0
+ultralytics==8.4.138
 transformers==4.44.2
 huggingface_hub>=0.24,<1.0
 # --- serving ---

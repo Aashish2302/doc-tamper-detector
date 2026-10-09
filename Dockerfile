@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Document Tamper Detector — RGB + content-mask branch. GPU (CUDA 12.1) image.
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
@@ -9,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu121
 
 COPY src/ src/
 COPY scripts/ scripts/

@@ -41,7 +41,7 @@ class ContentMaskExtractor:
         from huggingface_hub import hf_hub_download
         gpu = self.device.startswith("cuda")
         self._torch = torch
-        self._reader = easyocr.Reader(self._ocr_langs, gpu=gpu)
+        self._reader = easyocr.Reader(self._ocr_langs, gpu=gpu, verbose=False)
         self._sig_proc = AutoImageProcessor.from_pretrained("mdefrance/yolos-tiny-signature-detection")
         self._sig_model = AutoModelForObjectDetection.from_pretrained(
             "mdefrance/yolos-tiny-signature-detection").eval()
