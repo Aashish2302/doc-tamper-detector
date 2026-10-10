@@ -40,6 +40,33 @@ The weights are not in the git tree (too large). They are attached to the **`wei
 | `model.pt` | 460 MB | the trained tamper localizer |
 | `dinov3_vitb16.pth` | 343 MB | the DINOv3 backbone it builds on |
 
+### ID-card model (`weights-v2-id` release)
+
+A second set of weights, retrained with PAN and Aadhaar cards added, is attached to the **`weights-v2-id` release**.
+Same architecture and code; only the training data differs. Fetch it with:
+
+```bash
+TAG=weights-v2-id scripts/download_weights.sh
+```
+
+Training data: the original academic set (201 forged + 250 genuine pages, used twice) + 15 forged / 28 genuine ID pages
++ 768 PAN and 81 Aadhaar forgeries (2-4 single-character edits each, cards from the Kaggle datasets
+`nagendra048/pan-card-dataset` and `nagendra048/aadhar-dataset`) with their untouched originals.
+Checkpoint = epoch 25 (best validation IoU 0.625).
+
+Held-out test, threshold 0.5, tile 512, overlap 384 (cards split so the same physical card is never in train and test):
+
+| test set | model | mean IoU | fakes found (IoU >= 0.5) | fakes missed | genuine pages flagged |
+|---|---|---|---|---|---|
+| PAN cards (214 fake / 214 genuine) | `weights-v1` | 0.043 | 0 | 18 | 213 |
+| | **`weights-v2-id`** | **0.582** | **141** | **1** | **111** |
+| Aadhaar cards (23 / 23) | `weights-v1` | 0.001 | 0 | 18 | 20 |
+| | **`weights-v2-id`** | **0.291** | **4** | **2** | **5** |
+| Academic hard set (50 / 50) | `weights-v1` | **0.407** | **21** | **8** | 42 |
+| | `weights-v2-id` | 0.359 | 16 | 11 | 44 |
+
+Use `weights-v2-id` for PAN / Aadhaar cards and `weights-v1` (the default) for academic documents.
+
 The first prediction also downloads three small detector models (about 100 MB) from the Hugging Face Hub. The
 Docker image downloads them at build time, so the running container needs no internet.
 
