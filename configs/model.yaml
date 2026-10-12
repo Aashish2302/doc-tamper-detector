@@ -5,4 +5,4 @@ fusion_mode: residual
 use_noise: true
 backbone: dinov3_vitb16
 lora: {rank: 8, alpha: 16, blocks: 6}
-inference: {tile: 512, overlap: 384, threshold: 0.5}   # overlap 128 for ~5x faster, slightly lower IoU
+inference: {tile: 512, overlap: 128, threshold: 0.5}   # default; overlap 384 = ~3x slower model step, fewer genuine-page false alarms
