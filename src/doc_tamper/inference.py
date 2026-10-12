@@ -24,7 +24,7 @@ class TamperDetector:
     """RGB + all-five content-mask tamper localizer (the deployed 'A3' configuration)."""
 
     def __init__(self, weights: str = DEFAULT_WEIGHTS, dinov3_ckpt: str = DEFAULT_DINOV3,
-                 device: str | None = None, tile: int = 512, overlap: int = 384, batch: int = 8):
+                 device: str | None = None, tile: int = 512, overlap: int = 128, batch: int = 8):
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         self.tile, self.overlap, self.batch = tile, overlap, batch
         if not os.path.isfile(weights):

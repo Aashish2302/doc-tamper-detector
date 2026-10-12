@@ -54,7 +54,7 @@ Training data: the original academic set (201 forged + 250 genuine pages, used t
 `nagendra048/pan-card-dataset` and `nagendra048/aadhar-dataset`) with their untouched originals.
 Checkpoint = epoch 25 (best validation IoU 0.625).
 
-Held-out test, threshold 0.5, tile 512, overlap 384 (cards split so the same physical card is never in train and test):
+Held-out test, threshold 0.5, tile 512, overlap 384 (cards split so the same physical card is never in train and test; the server now defaults to overlap 128 for speed -- see below -- which scores almost identically: IoU 0.549 vs 0.554, 142/237 vs 145/237 found):
 
 | test set | model | mean IoU | fakes found (IoU >= 0.5) | fakes missed | genuine pages flagged |
 |---|---|---|---|---|---|
@@ -90,7 +90,7 @@ From Python:
 ```python
 import sys; sys.path.insert(0, "src")
 from doc_tamper import TamperDetector
-det = TamperDetector()                    # overlap=384 (most accurate); overlap=128 is ~5x faster
+det = TamperDetector()                    # overlap=128 (default, fastest); overlap=384 is the most accurate setting
 r = det.predict("page.png", threshold=0.5)
 print(r["tampered"], r["max_score"])      # r["mask"] = HxW mask, r["prob_map"] = HxW probabilities
 ```
@@ -233,7 +233,7 @@ Optional settings, passed with `-e NAME=value` on `docker run`:
 
 | variable | default | meaning |
 |---|---|---|
-| `DT_OVERLAP` | `384` | tile overlap. `384` = most accurate; `128` = about 5x faster, slightly lower accuracy |
+| `DT_OVERLAP` | `128` | tile overlap. `128` (default) is ~3x faster than `384` with accuracy within noise on our ID-card test (IoU 0.549 vs 0.554); `384` flags somewhat fewer genuine pages (116/237 vs 144/237) so is worth it if false alarms matter more than speed. Either way the content-mask step (OCR etc.) dominates total latency, not this setting -- see the timing note below. |
 
 ### Step 7 — Test it
 
@@ -260,9 +260,12 @@ curl -s -X POST "http://$PUBLIC_IP:8080/predict" -F "file=@page.png" > result.js
 python3 -c "import json,base64;d=json.load(open('result.json'));open('overlay.png','wb').write(base64.b64decode(d['overlay_png_base64']))"
 ```
 
-The first request is slow, roughly 20–60 s, while the models load into GPU memory. Later requests are fast. We
-haven't benchmarked an L4, so measure on your own pages. On an H100 the model alone takes about 1 s per page at
-overlap 384 and 0.2 s at overlap 128, and the content-mask detectors add some time per page.
+The first request is slow, roughly 20-60 s, while the models load into GPU memory. Later requests are fast. We
+haven't benchmarked an L4, so measure on your own pages. Measured on an A100: the tiled model pass itself takes about
+0.6 s per page at overlap 384 and 0.2 s at overlap 128 (the default) -- a ~3x speedup -- but the content-mask step
+(OCR + logo/signature detectors) dominates total latency regardless of overlap, at 2.5-20+ s per page depending on how
+much text is on the page. So switching overlap mainly helps if you batch the model step separately; it will not fix
+slow end-to-end `/predict` latency on text-heavy pages.
 
 ### Step 8 — Make sure it survives reboots
 
@@ -351,7 +354,7 @@ changes**, unless you attach an Elastic IP.
 | `overlay_png_base64` | the page with the mask drawn in red (when `return_overlay=true`) |
 | `height`, `width` | input size in pixels |
 
-Python class: `TamperDetector(weights=, dinov3_ckpt=, device=, tile=512, overlap=384, batch=8)`. The weight paths
+Python class: `TamperDetector(weights=, dinov3_ckpt=, device=, tile=512, overlap=128, batch=8)`. The weight paths
 can also be set with the `DT_WEIGHTS` and `DT_DINOV3` environment variables. The Docker image sets them to
 `/app/weights/...`.
 

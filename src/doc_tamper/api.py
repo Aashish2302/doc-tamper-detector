@@ -12,7 +12,7 @@ _detector = None
 def get_detector():
     global _detector
     if _detector is None:
-        _detector = TamperDetector(overlap=int(os.environ.get("DT_OVERLAP", "384")))
+        _detector = TamperDetector(overlap=int(os.environ.get("DT_OVERLAP", "128")))
     return _detector
 
 
