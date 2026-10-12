@@ -44,7 +44,7 @@ class ContentMaskExtractor:
         self._reader = easyocr.Reader(self._ocr_langs, gpu=gpu, verbose=False)
         self._sig_proc = AutoImageProcessor.from_pretrained("mdefrance/yolos-tiny-signature-detection")
         self._sig_model = AutoModelForObjectDetection.from_pretrained(
-            "mdefrance/yolos-tiny-signature-detection").eval()
+            "mdefrance/yolos-tiny-signature-detection").eval().to(self.device)
         self._layout = YOLO(hf_hub_download("Armaggheddon/yolo26-document-layout", "yolo26n_doc_layout.pt"))
 
     # ---- per-channel detectors -------------------------------------------------
@@ -58,7 +58,8 @@ class ContentMaskExtractor:
         from PIL import Image
         pil = Image.fromarray(rgb)
         with self._torch.no_grad():
-            o = self._sig_model(**self._sig_proc(images=pil, return_tensors="pt"))
+            inp = {k: v.to(self.device) for k, v in self._sig_proc(images=pil, return_tensors="pt").items()}
+            o = self._sig_model(**inp)
         res = self._sig_proc.post_process_object_detection(
             o, threshold=0.3, target_sizes=self._torch.tensor([pil.size[::-1]]))[0]
         m = np.zeros(rgb.shape[:2], np.uint8)
