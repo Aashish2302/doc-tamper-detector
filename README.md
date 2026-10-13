@@ -67,6 +67,31 @@ Held-out test, threshold 0.5, tile 512, overlap 384 (cards split so the same phy
 
 Use `weights-v2-id` for PAN / Aadhaar cards and `weights-v1` (the default) for academic documents.
 
+### No-content-mask ablation (`weights-v3-nocontent` release)
+
+Same architecture and training data as `weights-v2-id`, but the 5-channel content-mask branch (text/logo/
+signature/stamp/watermark) is zeroed out at both train and inference time -- RGB input only. Published for
+reproducibility of this ablation, **not currently recommended over `weights-v2-id` for production**:
+
+```bash
+TAG=weights-v3-nocontent scripts/download_weights.sh
+```
+
+| test set | model | mean IoU | fakes found (IoU >= 0.5) | fakes missed | genuine pages flagged |
+|---|---|---|---|---|---|
+| PAN cards (214 / 214) | `weights-v2-id` | 0.582 | 141 | 1 | 111 |
+| | **`weights-v3-nocontent`** | **0.622** | **151** | **0** | 136 |
+| Aadhaar cards (23 / 23) | `weights-v2-id` | 0.291 | 4 | 2 | 5 |
+| | **`weights-v3-nocontent`** | **0.384** | **8** | **1** | 7 |
+| Academic hard set (50 / 50) | `weights-v2-id` | **0.359** | **16** | **11** | 44 |
+| | `weights-v3-nocontent` | 0.335 | 15 | 12 | 40 |
+
+Removing the content mask localizes PAN/Aadhaar edits *better*, not worse, and costs a little accuracy on academic
+documents -- plausible since the content mask was tuned to help ignore logos/signatures/stamps on academic pages,
+and on ID cards its "text" channel may dilute the signal over the exact region a small character edit lives in.
+Single run each side, not repeated across seeds -- treat as suggestive pending replication. See the
+`weights-v3-nocontent` release notes for the full writeup.
+
 The first prediction also downloads three small detector models (about 100 MB) from the Hugging Face Hub. The
 Docker image downloads them at build time, so the running container needs no internet.
 
